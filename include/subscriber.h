@@ -2,7 +2,7 @@
  * @Author: aurson jassimxiong@gmail.com
  * @Date: 2025-09-14 17:33:37
  * @LastEditors: aurson jassimxiong@gmail.com
- * @LastEditTime: 2026-01-22 16:24:36
+ * @LastEditTime: 2026-01-22 17:06:58
  * @Description:
  *     ___ ___ _________ ___  ___
  *    / _ `/ // / __(_-</ _ \/ _ \
@@ -29,36 +29,32 @@
 #include <cstdint>
 #include <mutex>
 
-class MakeId {
-public:
-    uint64_t request() {
-        std::lock_guard<std::mutex> glck(mutex_);
-        return count_++;
-    }
-
-private:
-    uint64_t count_ = 0;
-    std::mutex mutex_;
-};
 class Subscriber {
 public:
     Subscriber() {
-        id_ = Singleton<MakeId>::instance().request();
+        sid_ = request_sid();
     }
 
     template <typename DataType>
     bool subscribe(const typename Broker<DataType>::Topic &topic,
         const typename Broker<DataType>::Callback &callback) {
-        id_ = Singleton<MakeId>::instance().request();
-        return Singleton<Broker<DataType>>::instance().subscribe(id_, topic, callback);
+        return Singleton<Broker<DataType>>::instance().subscribe(sid_, topic, callback);
     }
 
     template <typename DataType>
     void unsubscribe(const typename Broker<DataType>::Topic &topic) {
-        Singleton<Broker<DataType>>::instance().unsubscribe(id_, topic);
+        Singleton<Broker<DataType>>::instance().unsubscribe(sid_, topic);
     }
 
 private:
-    uint64_t id_ = 0;
+    uint64_t request_sid() {
+        static uint64_t sid = 0;
+        static std::mutex mutex_;
+        std::lock_guard<std::mutex> glck(mutex_);
+        return sid++;
+    }
+
+private:
+    uint64_t sid_ = 0;
 };
 #endif // SUBSCRIBER_H

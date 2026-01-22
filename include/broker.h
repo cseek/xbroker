@@ -2,7 +2,7 @@
  * @Author: aurson jassimxiong@gmail.com
  * @Date: 2025-09-14 17:33:37
  * @LastEditors: aurson jassimxiong@gmail.com
- * @LastEditTime: 2026-01-22 16:08:05
+ * @LastEditTime: 2026-01-22 17:07:25
  * @Description:
  *     ___ ___ _________ ___  ___
  *    / _ `/ // / __(_-</ _ \/ _ \
@@ -38,22 +38,22 @@ public:
     using Callback = std::function<void(const DataType &)>;
     using IdMap = std::unordered_map<uint64_t, Callback>;
 
-    bool subscribe(uint64_t id, const Topic &topic, const Callback &callback) {
+    bool subscribe(uint64_t sid_, const Topic &topic, const Callback &callback) {
         std::unique_lock<std::shared_mutex> slock(mutex_);
         auto &idmap = topic_map_[topic];
-        auto it = idmap.find(id);
+        auto it = idmap.find(sid_);
         if (it == idmap.end()) {
-            idmap[id] = callback;
+            idmap[sid_] = callback;
             return true;
         }
         return false;
     }
 
-    void unsubscribe(uint64_t id, const Topic &topic) {
+    void unsubscribe(uint64_t sid_, const Topic &topic) {
         std::unique_lock<std::shared_mutex> slock(mutex_);
         auto it = topic_map_.find(topic);
         if (it != topic_map_.end()) {
-            it->second.erase(id);
+            it->second.erase(sid_);
             if (it->second.empty()) {
                 topic_map_.erase(it);
             }

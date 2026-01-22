@@ -2,7 +2,7 @@
  * @Author: aurson jassimxiong@gmail.com
  * @Date: 2025-09-14 17:33:37
  * @LastEditors: aurson jassimxiong@gmail.com
- * @LastEditTime: 2026-01-22 16:30:48
+ * @LastEditTime: 2026-01-22 17:05:57
  * @Description:
  *     ___ ___ _________ ___  ___
  *    / _ `/ // / __(_-</ _ \/ _ \
@@ -38,9 +38,11 @@ int main() {
     subscriber.subscribe<std::string>("/news1", [](const std::string &msg) {
         std::cout << "#2   topic: /news1, message: " << msg << std::endl;
     });
-    subscriber.subscribe<std::string>("/news", [](const std::string &msg) {
-        std::cout << "#3   topic: /news, message: " << msg << std::endl;
-    });
+
+    // 订阅会失败，因为已经订阅过了
+    // subscriber.subscribe<std::string>("/news", [](const std::string &msg) {
+    //    std::cout << "#3   topic: /news, message: " << msg << std::endl;
+    //});
 
     while (true) {
         publisher.publish<std::string>("/news", std::string("hello xbroker"));
