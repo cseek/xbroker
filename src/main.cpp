@@ -2,7 +2,7 @@
  * @Author: aurson jassimxiong@gmail.com
  * @Date: 2025-09-14 17:33:37
  * @LastEditors: aurson jassimxiong@gmail.com
- * @LastEditTime: 2025-11-27 14:30:58
+ * @LastEditTime: 2026-01-22 16:30:48
  * @Description:
  *     ___ ___ _________ ___  ___
  *    / _ `/ // / __(_-</ _ \/ _ \
@@ -33,12 +33,19 @@ int main() {
     Subscriber subscriber;
 
     subscriber.subscribe<std::string>("/news", [](const std::string &msg) {
-        std::cout << "topic: /news, message: " << msg << std::endl;
+        std::cout << "#1   topic: /news, message: " << msg << std::endl;
+    });
+    subscriber.subscribe<std::string>("/news1", [](const std::string &msg) {
+        std::cout << "#2   topic: /news1, message: " << msg << std::endl;
+    });
+    subscriber.subscribe<std::string>("/news", [](const std::string &msg) {
+        std::cout << "#3   topic: /news, message: " << msg << std::endl;
     });
 
     while (true) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         publisher.publish<std::string>("/news", std::string("hello xbroker"));
+        publisher.publish<std::string>("/news1", std::string("hello xbroker1"));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     return 0;

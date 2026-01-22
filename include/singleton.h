@@ -2,7 +2,7 @@
  * @Author: aurson jassimxiong@gmail.com
  * @Date: 2025-09-14 17:33:37
  * @LastEditors: aurson jassimxiong@gmail.com
- * @LastEditTime: 2025-11-27 14:30:44
+ * @LastEditTime: 2026-01-22 16:05:08
  * @Description:
  *     ___ ___ _________ ___  ___
  *    / _ `/ // / __(_-</ _ \/ _ \
@@ -21,8 +21,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __SINGLETON_H__
-#define __SINGLETON_H__
+#ifndef SINGLETON_H
+#define SINGLETON_H
 
 #include <utility>
 
@@ -42,4 +42,4 @@ protected:
     ~Singleton() = default;
 };
 
-#endif // __SINGLETON_H__
+#endif // SINGLETON_H

@@ -2,7 +2,7 @@
  * @Author: aurson jassimxiong@gmail.com
  * @Date: 2025-09-14 17:33:37
  * @LastEditors: aurson jassimxiong@gmail.com
- * @LastEditTime: 2025-11-27 14:30:37
+ * @LastEditTime: 2026-01-22 16:08:05
  * @Description:
  *     ___ ___ _________ ___  ___
  *    / _ `/ // / __(_-</ _ \/ _ \
@@ -21,8 +21,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __BROKER_H__
-#define __BROKER_H__
+#ifndef BROKER_H
+#define BROKER_H
 
 #include <functional>
 #include <unordered_map>
@@ -69,8 +69,9 @@ public:
             if (topic_it != topic_map_.end()) {
                 callbacks.reserve(topic_it->second.size());
                 for (const auto &it : topic_it->second) {
-                    if (it.second)
+                    if (it.second) {
                         callbacks.push_back(it.second);
+                    }
                 }
             }
         }
@@ -87,4 +88,4 @@ private:
     std::unordered_map<Topic, IdMap> topic_map_;
 };
 
-#endif // __BROKER_H__
+#endif // BROKER_H

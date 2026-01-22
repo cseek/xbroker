@@ -2,7 +2,7 @@
  * @Author: aurson jassimxiong@gmail.com
  * @Date: 2025-09-14 17:33:37
  * @LastEditors: aurson jassimxiong@gmail.com
- * @LastEditTime: 2025-11-27 14:30:49
+ * @LastEditTime: 2026-01-22 16:24:36
  * @Description:
  *     ___ ___ _________ ___  ___
  *    / _ `/ // / __(_-</ _ \/ _ \
@@ -21,8 +21,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __SUBSCRIBER_H__
-#define __SUBSCRIBER_H__
+#ifndef SUBSCRIBER_H
+#define SUBSCRIBER_H
 
 #include "broker.h"
 #include "singleton.h"
@@ -49,6 +49,7 @@ public:
     template <typename DataType>
     bool subscribe(const typename Broker<DataType>::Topic &topic,
         const typename Broker<DataType>::Callback &callback) {
+        id_ = Singleton<MakeId>::instance().request();
         return Singleton<Broker<DataType>>::instance().subscribe(id_, topic, callback);
     }
 
@@ -57,11 +58,7 @@ public:
         Singleton<Broker<DataType>>::instance().unsubscribe(id_, topic);
     }
 
-    uint64_t id() const {
-        return id_;
-    }
-
 private:
-    uint64_t id_;
+    uint64_t id_ = 0;
 };
-#endif // __SUBSCRIBER_H__
+#endif // SUBSCRIBER_H

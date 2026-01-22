@@ -2,7 +2,7 @@
  * @Author: aurson jassimxiong@gmail.com
  * @Date: 2025-09-14 17:33:37
  * @LastEditors: aurson jassimxiong@gmail.com
- * @LastEditTime: 2025-11-27 14:30:27
+ * @LastEditTime: 2026-01-22 16:05:52
  * @Description:
  *     ___ ___ _________ ___  ___
  *    / _ `/ // / __(_-</ _ \/ _ \
@@ -21,8 +21,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef __PUBLISHER_H__
-#define __PUBLISHER_H__
+#ifndef PUBLISHER_H
+#define PUBLISHER_H
 
 #include "broker.h"
 #include "singleton.h"
@@ -35,4 +35,4 @@ public:
     }
 };
 
-#endif // __PUBLISHER_H__
+#endif // PUBLISHER_H
