@@ -2,7 +2,7 @@
  * @Author: aurson jassimxiong@gmail.com
  * @Date: 2025-09-14 17:33:37
  * @LastEditors: aurson jassimxiong@gmail.com
- * @LastEditTime: 2026-01-22 17:05:57
+ * @LastEditTime: 2026-01-22 20:30:25
  * @Description:
  *     ___ ___ _________ ___  ___
  *    / _ `/ // / __(_-</ _ \/ _ \
@@ -25,8 +25,9 @@
 #include <string>
 #include <thread>
 #include <chrono>
-#include "publisher.h"
-#include "subscriber.h"
+#include "broker.h"
+
+using namespace Aurson;
 
 int main() {
     Publisher publisher;

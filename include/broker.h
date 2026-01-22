@@ -1,26 +1,3 @@
-/*
- * @Author: aurson jassimxiong@gmail.com
- * @Date: 2025-09-14 17:33:37
- * @LastEditors: aurson jassimxiong@gmail.com
- * @LastEditTime: 2026-01-22 17:07:25
- * @Description:
- *     ___ ___ _________ ___  ___
- *    / _ `/ // / __(_-</ _ \/ _ \
- *    \_,_/\_,_/_/ /___/\___/_//_/
- *
- * Copyright (c) 2025 by Aurson, All Rights Reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 #ifndef BROKER_H
 #define BROKER_H
 
@@ -30,62 +7,115 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <cstdint>
 
-template <typename DataType>
-class Broker {
-public:
+namespace Aurson {
+    using Sid = uint64_t;
     using Topic = std::string;
-    using Callback = std::function<void(const DataType &)>;
-    using IdMap = std::unordered_map<uint64_t, Callback>;
+    template <typename DataType>
+    class Broker {
+    private:
+        Broker(const Broker &) = delete;
+        Broker &operator=(const Broker &) = delete;
+        Broker() = default;
+        ~Broker() = default;
 
-    bool subscribe(uint64_t sid_, const Topic &topic, const Callback &callback) {
-        std::unique_lock<std::shared_mutex> slock(mutex_);
-        auto &idmap = topic_map_[topic];
-        auto it = idmap.find(sid_);
-        if (it == idmap.end()) {
-            idmap[sid_] = callback;
-            return true;
+    public:
+        using Callback = std::function<void(const DataType &)>;
+        using IdMap = std::unordered_map<Sid, Callback>;
+
+    public:
+        static Broker &instance() {
+            static Broker obj;
+            return obj;
         }
-        return false;
-    }
 
-    void unsubscribe(uint64_t sid_, const Topic &topic) {
-        std::unique_lock<std::shared_mutex> slock(mutex_);
-        auto it = topic_map_.find(topic);
-        if (it != topic_map_.end()) {
-            it->second.erase(sid_);
-            if (it->second.empty()) {
-                topic_map_.erase(it);
+        bool subscribe(Sid sid, const Topic &topic, const Callback &callback) {
+            std::unique_lock<std::shared_mutex> uslocker(mutex_);
+            auto &sid_map = topic_map_[topic];
+            auto it = sid_map.find(sid);
+            if (it == sid_map.end()) {
+                sid_map[sid] = callback;
+                return true;
             }
+            return false;
         }
-    }
 
-    void publish(const Topic &topic, const DataType &data) {
-        // 防止死锁
-        std::vector<Callback> callbacks;
-        {
-            std::shared_lock<std::shared_mutex> slock(mutex_);
-            auto topic_it = topic_map_.find(topic);
-            if (topic_it != topic_map_.end()) {
-                callbacks.reserve(topic_it->second.size());
-                for (const auto &it : topic_it->second) {
-                    if (it.second) {
-                        callbacks.push_back(it.second);
-                    }
+        void unsubscribe(Sid sid, const Topic &topic) {
+            std::unique_lock<std::shared_mutex> uslocker(mutex_);
+            auto it = topic_map_.find(topic);
+            if (it != topic_map_.end()) {
+                it->second.erase(sid);
+                if (it->second.empty()) {
+                    topic_map_.erase(it);
                 }
             }
         }
-        for (const auto &cb : callbacks) {
-            try {
-                cb(data);
-            } catch (...) {
+
+        void publish(const Topic &topic, const DataType &data) {
+            // 防止死锁
+            std::vector<Callback> callbacks;
+            {
+                std::shared_lock<std::shared_mutex> sslocker(mutex_);
+                auto it1 = topic_map_.find(topic);
+                if (it1 != topic_map_.end()) {
+                    callbacks.reserve(it1->second.size());
+                    for (const auto &it2 : it1->second) {
+                        if (it2.second) {
+                            callbacks.push_back(it2.second);
+                        }
+                    }
+                }
+            }
+            for (const auto &cb : callbacks) {
+                try {
+                    if (cb) {
+                        cb(data);
+                    }
+                } catch (...) {
+                }
             }
         }
-    }
 
-private:
-    std::shared_mutex mutex_;
-    std::unordered_map<Topic, IdMap> topic_map_;
-};
+    private:
+        std::shared_mutex mutex_;
+        std::unordered_map<Topic, IdMap> topic_map_;
+    };
+    class Publisher {
+    public:
+        template <typename DataType>
+        void publish(const Topic &topic, const DataType &data) {
+            Broker<DataType>::instance().publish(topic, data);
+        }
+    };
+    class Subscriber {
+    public:
+        Subscriber() {
+            sid_ = request_sid();
+        }
+
+        template <typename DataType>
+        bool subscribe(const Topic &topic,
+            const typename Broker<DataType>::Callback &callback) {
+            return Broker<DataType>::instance().subscribe(sid_, topic, callback);
+        }
+
+        template <typename DataType>
+        void unsubscribe(const Topic &topic) {
+            Broker<DataType>::instance().unsubscribe(sid_, topic);
+        }
+
+    private:
+        Sid request_sid() {
+            static Sid sid = 0;
+            static std::mutex mutex_;
+            std::lock_guard<std::mutex> glck(mutex_);
+            return sid++;
+        }
+
+    private:
+        Sid sid_ = 0;
+    };
+} // namespace Aurson
 
 #endif // BROKER_H
